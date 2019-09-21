@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.videoweb.ying.dao.TClassifyMapper">
+
+
+
+	<select id="selectIdPage" resultType="java.lang.Integer">
+		select id from t_classify
+		<where>
+			<if test="cm.keyword != null and cm.keyword != ''">
+				and (
+					or name like CONCAT('%',#{cm.keyword},'%')
+					or classify_icon like CONCAT('%',#{cm.keyword},'%')
+				)
+			</if>
+		</where>
+	</select>
+	
+	<select id="selectClassify" resultType="java.util.Map">
+		select 
+		id,
+		name,
+		icon_type as iconType,
+		classify_icon as  classifyIcon
+		from t_classify
+		order by id desc
+	</select>
+</mapper>

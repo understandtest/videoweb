@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<!DOCTYPE configuration  
+        PUBLIC "-//ibatis.apache.org//DTD Config 3.0//EN"  
+        "http://ibatis.apache.org/dtd/ibatis-3-config.dtd">  
+<configuration>  
+  
+    <settings> 
+    	<!-- 字段为空时仍调用model的set方法或map的put方法 -->
+		<setting name="callSettersOnNulls" value="true"/> 
+        <setting name="cacheEnabled" value="false" />  
+        <setting name="lazyLoadingEnabled" value="false" />  
+        <setting name="aggressiveLazyLoading" value="false"/>  
+    </settings>
+  
+  
+  	<plugins>
+    		<plugin interceptor="com.baomidou.mybatisplus.plugins.PaginationInterceptor">
+       		 <!-- 指定数据库方言 -->
+       			 <property name="dialectType" value="mysql"/>
+    		</plugin>
+	</plugins>
+</configuration>  

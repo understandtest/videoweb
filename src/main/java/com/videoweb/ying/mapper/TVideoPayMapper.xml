@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.videoweb.ying.dao.TVideoPayMapper">
+
+
+    <select id="findEverydayPays" resultType="java.util.Map">
+		SELECT
+			v.id,
+			count(1) AS payNum,
+			v.video_name,
+			v.video_cover,
+			v.video_url,
+			(
+				SELECT
+					COUNT(1)
+				FROM
+					t_care_times tc
+				WHERE
+					tc.video_id = v.id
+				AND tc.care_type = 1
+			) careNum,
+				(
+			SELECT
+				COUNT(1)
+			FROM
+				t_care_times tc
+			WHERE
+				tc.video_id = v.id
+			AND tc.care_type = 2
+		) dislikeNum
+		FROM
+			t_video_pay pay
+		LEFT JOIN t_video v ON pay.video_id = v.id
+		WHERE
+			to_days(pay.create_time) = to_days(now())
+		GROUP BY
+			v.id
+		ORDER BY
+			payNum DESC
+	</select>
+
+    <select id="findWeeklyPays" resultType="java.util.Map">
+        SELECT
+        v.id,
+        count(1) AS payNum,
+        v.video_name,
+        v.video_cover,
+        v.video_url,
+        (
+        SELECT
+        COUNT(1)
+        FROM
+        t_care_times tc
+        WHERE
+        tc.video_id = v.id
+        AND tc.care_type = 1
+        ) careNum,
+        (
+			SELECT
+				COUNT(1)
+			FROM
+				t_care_times tc
+			WHERE
+				tc.video_id = v.id
+			AND tc.care_type = 2
+		) dislikeNum
+        FROM
+        t_video_pay pay
+        LEFT JOIN t_video v ON pay.video_id = v.id
+        WHERE
+        DATE_SUB(CURDATE(), INTERVAL 7 DAY)&lt;= date(pay.create_time)
+        GROUP BY
+        v.id
+        ORDER BY
+        payNum DESC
+    </select>
+    <select id="findMonthlyPays" resultType="java.util.Map">
+		SELECT
+			v.id,
+			count(1) AS payNum,
+			v.video_name,
+			v.video_cover,
+			v.video_url,
+			(
+				SELECT
+					COUNT(1)
+				FROM
+					t_care_times tc
+				WHERE
+					tc.video_id = v.id
+				AND tc.care_type = 1
+			) careNum,
+			(
+				SELECT
+					COUNT(1)
+				FROM
+					t_care_times tc
+				WHERE
+					tc.video_id = v.id
+				AND tc.care_type = 2
+			) dislikeNum
+		FROM
+			t_video_pay pay
+		LEFT JOIN t_video v ON pay.video_id = v.id
+		WHERE
+			DATE_FORMAT( pay.create_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
+		GROUP BY
+			v.id
+		ORDER BY
+			payNum DESC
+    </select>
+
+	<insert id="addVideoPay">
+		insert into t_video_pay(video_id,create_time,member_id) values (#{cm.videoId},#{cm.createTime},#{cm.memberId})
+	</insert>
+</mapper>

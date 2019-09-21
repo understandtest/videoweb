@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.videoweb.ying.dao.CaricatureChapterImgMapper">
+    <select id="findChapterImgList" resultType="java.util.Map">
+        SELECT
+            sort_no sortNo,
+            img_url imgUrl
+        FROM
+            t_caricature_chapter_img cc
+        WHERE
+            cc.caricature_chapter_id = #{chapterId}
+        order by sort_no
+    </select>
+</mapper>

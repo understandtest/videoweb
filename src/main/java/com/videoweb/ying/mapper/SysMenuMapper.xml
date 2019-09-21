@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.videoweb.ying.dao.SysMenuMapper">
+
+
+
+	<select id="selectIdPage" resultType="java.lang.Integer">
+		select id from sys_menu
+		<where>
+			<if test="cm.keyword != null and cm.keyword != ''">
+				and (
+					or parent_id like CONCAT('%',#{cm.keyword},'%')
+					or name like CONCAT('%',#{cm.keyword},'%')
+					or url like CONCAT('%',#{cm.keyword},'%')
+					or permission like CONCAT('%',#{cm.keyword},'%')
+					or menu_type like CONCAT('%',#{cm.keyword},'%')
+					or icon like CONCAT('%',#{cm.keyword},'%')
+					or sort_no like CONCAT('%',#{cm.keyword},'%')
+					or is_expend like CONCAT('%',#{cm.keyword},'%')
+					or is_show like CONCAT('%',#{cm.keyword},'%')
+					or is_enable like CONCAT('%',#{cm.keyword},'%')
+				)
+			</if>
+		</where>
+	</select>
+</mapper>

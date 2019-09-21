@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.videoweb.ying.dao.TViewsHistoryMapper">
+
+
+
+	<select id="selectIdPage" resultType="java.lang.Integer">
+		select id from t_views_history
+		<where>
+			<if test="cm.keyword != null and cm.keyword != ''">
+				and (
+					or member_id like CONCAT('%',#{cm.keyword},'%')
+					or video_id like CONCAT('%',#{cm.keyword},'%')
+					or view_time like CONCAT('%',#{cm.keyword},'%')
+				)
+			</if>
+		</where>
+	</select>
+	<select id="selectViewHistory" resultType="java.util.Map">
+		SELECT 
+		 tvh.id,
+		 DATE_FORMAT(tvh.`view_time`,'%Y-%m-%d') AS viewTime,
+		 tv.`video_name` AS videoName,
+		 tv.id AS videoId,
+		 tv.video_cover_type as videoCoverType,
+		 tv.`video_cover` AS videoCover
+		FROM t_views_history tvh LEFT JOIN t_video tv ON tvh.`video_id` = tv.`id`
+		WHERE 1=1 and tvh.`member_id` = #{memberId}
+		GROUP BY  tvh.`video_id`
+		ORDER BY tvh.`create_time` DESC
+	</select>
+</mapper>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.videoweb.ying.dao.TExtensionHistoryMapper">
+
+	<select id="selectIdPage" resultType="java.lang.Integer">
+		select id from t_extension_history
+		<where>
+			<if test="cm.keyword != null and cm.keyword != ''">
+				and (
+					or member_id like CONCAT('%',#{cm.keyword},'%')
+					or nick_name like CONCAT('%',#{cm.keyword},'%')
+					or tel like CONCAT('%',#{cm.keyword},'%')
+					or regedit_time like CONCAT('%',#{cm.keyword},'%')
+				)
+			</if>
+			<if test="cm.memberId != null and cm.memberId !=''">
+			   and member_id = #{cm.memberId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="getExtensionHistory" resultType="java.util.Map">
+		SELECT 
+		th.nick_name AS nickName,
+		th.tel AS  tel,
+		DATE_FORMAT(th.regedit_time,'%Y-%m-%d') AS  regeditTime
+		FROM t_extension_history th WHERE th.member_id = #{memberId}
+	</select>
+</mapper>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.videoweb.ying.dao.TNoticeMapper">
+
+
+
+	<select id="selectIdPage" resultType="java.lang.Integer">
+		select id from t_notice
+		<where>
+			<if test="cm.keyword != null and cm.keyword != ''">
+				and (
+					or notice_title like CONCAT('%',#{cm.keyword},'%')
+					or notice_brief like CONCAT('%',#{cm.keyword},'%')
+					or notice_content like CONCAT('%',#{cm.keyword},'%')
+					or long_time like CONCAT('%',#{cm.keyword},'%')
+				)
+			</if>
+		</where>
+	</select>
+	<select id="selectListPage" resultType="java.util.Map">
+		SELECT 
+			id,
+			notice_title AS noticeTitle,
+			notice_brief AS  noticeBrief,
+			DATE_FORMAT(create_time,'%Y-%m-%d') AS pushTime
+		FROM t_notice
+	</select>
+	
+	<select id="getNoticeSub" resultType="java.util.Map">
+	SELECT tn.id, 
+		tn.`notice_title` AS noticleTitle,
+		tn.`notice_brief` AS noticeBrief ,
+		tn.notice_content AS noticContent  
+	FROM t_notice AS tn WHERE NOW() BETWEEN tn.`start_time` AND tn.`end_time`
+	ORDER BY tn.`end_time` DESC
+	LIMIT 1
+	</select>
+</mapper>

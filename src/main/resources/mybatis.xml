@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="
+     http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+     http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.0.xsd
+     http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+     http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+     http://www.springframework.org/schema/task 
+     http://www.springframework.org/schema/task/spring-task-4.0.xsd
+     ">
+    
+    <bean name="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+		<property name="url" value="${JDBC.url}" />
+		<property name="username" value="${JDBC.username}" />
+		<property name="password" value="${JDBC.password}" />
+		<property name = "driverClassName" value = "${JDBC.driver}" />    
+		<property name="initialSize" value="${druid.initialSize}" />		
+		<property name="maxActive" value="${druid.maxActive}" />	
+		<property name="minIdle" value="${druid.minIdle}" />		
+		<property name="validationQuery" value="${druid.validationQuery}" />
+		<property name="testOnBorrow" value="${druid.testOnBorrow}" />
+		<property name="testOnReturn" value="${druid.testOnReturn}" />
+		<property name="testWhileIdle" value="${druid.testWhileIdle}" />
+		<property name="timeBetweenEvictionRunsMillis" value="${druid.timeBetweenEvictionRunsMillis}" />
+		<property name="minEvictableIdleTimeMillis" value="${druid.minEvictableIdleTimeMillis}" />
+		<property name="removeAbandoned" value="${druid.removeAbandoned}" />
+		<property name="removeAbandonedTimeout" value="${druid.removeAbandonedTimeout}" />
+		<property name="logAbandoned" value="${druid.logAbandoned}" />
+		<property name="filters" value="${druid.filters}" />
+	</bean>
+    
+    
+    <!-- spring和MyBatis完美整合，不需要mybatis的配置映射文件 -->  
+    <bean id="sqlSessionFactory" class="com.baomidou.mybatisplus.spring.MybatisSqlSessionFactoryBean">  
+        <property name="dataSource" ref="dataSource" />  
+        <!-- 自动扫描mapping.xml文件 -->  
+        <property name="mapperLocations" value="classpath:com/videoweb/*/mapper/*.xml"></property>
+         <property name="configLocation" value="classpath:mybatis-paginator.xml"></property>
+        <property name="typeAliasesPackage" value="com.videoweb.*.po" /> 
+        <property name="globalConfig">
+			<bean class="com.baomidou.mybatisplus.entity.GlobalConfiguration">
+				<property name="dbColumnUnderline" value="true" />
+				 <property name="sqlInjector">
+				 	<bean class="com.baomidou.mybatisplus.mapper.AutoSqlInjector" />
+				 </property>
+			</bean>
+		</property> 
+    </bean> 
+    
+    
+    <!-- DAO接口所在包名，Spring会自动查找其下的类 -->  
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+    	<!-- <property name="annotationClass" value="org.springframework.stereotype.Repository" />   -->
+        <property name="basePackage" value="com.videoweb.*.dao" />  
+       <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+    </bean>  
+    
+     <!-- (事务管理)transaction manager, use JtaTransactionManager for global tx -->  
+    <bean id="transactionManager"  
+        class="org.springframework.jdbc.datasource.DataSourceTransactionManager">  
+        <property name="dataSource" ref="dataSource" />  
+    </bean>  
+    <!-- 开启事务注解 -->
+	<tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
+  
+</beans> 

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.videoweb.ying.dao.CaricatureChapterMapper">
+    <select id="getListByCaricatureId" resultType="java.util.Map">
+        SELECT
+            id,
+            name,
+            sort_no sortNo
+        FROM
+            t_caricature_chapter cc
+        WHERE
+	        cc.caricature_id = #{caricatureId}
+	    order by sort_no
+    </select>
+    <select id="findOne" resultType="java.util.Map">
+        SELECT
+        id,
+        NAME,
+        is_collect_fees isCollectFees,
+        (
+        SELECT
+        id
+        FROM
+        t_caricature_chapter cc1
+        WHERE
+        cc1.caricature_id = cc.caricature_id
+        AND cc1.sort_no &lt; cc.sort_no
+                          ORDER BY
+                          cc1.sort_no DESC
+                          LIMIT 0,1
+        ) upId,
+        (
+        SELECT
+        id
+        FROM
+        t_caricature_chapter cc1
+        WHERE
+        cc1.caricature_id = cc.caricature_id
+        AND cc1.sort_no > cc.sort_no
+        ORDER BY
+        cc1.sort_no
+        LIMIT 0,1
+        ) nextId
+        FROM
+        t_caricature_chapter cc
+        WHERE
+        id = #{id}
+    </select>
+</mapper>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.videoweb.ying.dao.CaricatureBookcaseMapper">
+
+    <select id="findChapterImgList" resultType="java.util.Map">
+        SELECT
+            cb.id id,
+            cb.caricature_id caricatureId,
+            c. NAME caricatureName,
+            c.watch_num watchNum,
+            c.cover,
+            c.cover_type coverType,
+            (
+                SELECT
+                    count(1)
+                FROM
+                    t_caricature_chapter cc
+                WHERE
+                    cc.caricature_id = c.id
+            ) chapterNum,
+            ccl. NAME classifyName
+        FROM
+            t_caricature_bookcase cb
+        LEFT JOIN t_caricature c ON cb.caricature_id = c.id
+        LEFT JOIN t_caricature_classify ccl ON ccl.id = c.caricature_classify_id
+        WHERE
+            cb.member_id = #{memberId}
+    </select>
+</mapper>

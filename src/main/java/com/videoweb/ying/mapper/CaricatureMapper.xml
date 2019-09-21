@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.videoweb.ying.dao.CaricatureMapper">
+    <select id="findCaricatureList" resultType="java.util.Map">
+        SELECT
+        id,
+        name,
+        cover,
+        cover_type coverType,
+        (select count(1) from t_caricature_chapter cc where cc.caricature_id = c.id) chapterNum
+    FROM
+        t_caricature c
+    where
+        c.is_push = 1
+        <if test="classifyId != null and classifyId != '' and classifyId != -1">
+            and c.caricature_classify_id = #{classifyId}
+        </if>
+        <if test="name != null and name != ''">
+            and c.name like concat('%',#{name},'%')
+        </if>
+        <if test="orderType != null and orderType == '1'.toString() ">
+            order by c.watch_num desc
+        </if>
+        <if test="orderType != null and orderType == '2'.toString() ">
+            order by c.create_time desc
+        </if>
+        <if test="orderType != null and orderType == '3'.toString() ">
+            order by c.update_time desc
+        </if>
+    </select>
+    <select id="findOne" resultType="java.util.Map">
+         SELECT
+        id,
+        name,
+        cover,
+        cover_type coverType,
+        desc_cover descCover,
+        desc_cover_type descCoverType,
+				watch_num watchNum,
+				caricature_desc caricatureDesc,
+				(select id from t_caricature_chapter cc where cc.caricature_id = c.id order by sort_no limit 0,1) chapterId,
+				(select count(1) from t_caricature_chapter cc where cc.caricature_id = c.id) chapterNum
+        FROM
+            t_caricature c
+     where id = #{id}
+    </select>
+    <update id="updateWatchNum">
+        update t_caricature set watch_num = watch_num + 1 where id = #{id}
+    </update>
+</mapper>

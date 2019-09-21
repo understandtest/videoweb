@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.videoweb.ying.dao.TBannerMapper">
+
+
+
+	<select id="selectIdPage" resultType="java.lang.Integer">
+		select id from t_banner
+		<where>
+			<if test="cm.keyword != null and cm.keyword != ''">
+				and (
+					or pic_type like CONCAT('%',#{cm.keyword},'%')
+					or pic_url like CONCAT('%',#{cm.keyword},'%')
+				)
+			</if>
+		</where>
+	</select>
+	
+	<select id="getBannerList" resultType="java.util.Map">
+		SELECT 
+			tb.id,
+			tb.pic_type as picType,
+			tb.`pic_url` AS picUrl,
+			tb.`link_type` AS linkType,
+			CASE WHEN tb.`link_type` =1 THEN '外部链接'
+			WHEN tb.`link_type` =2 THEN '内部影片' END linkTypeName,
+			tb.tag_id as tagId,
+			(CASE WHEN tb.link_type=5 THEN (SELECT tgj.name FROM t_tags  tgj WHERE tgj.id = tb.tag_id) END)   AS tagName,
+			tb.pic_from as picFrom,
+			tb.link_url AS linkUrl
+		FROM t_banner tb
+		where 1=1 and tb.is_show=1
+		<if test="picType != null and picType != ''">
+			and tb.pic_type = #{picType}
+		</if>
+	</select>
+</mapper>

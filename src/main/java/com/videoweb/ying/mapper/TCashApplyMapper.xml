@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.videoweb.ying.dao.TCashApplyMapper">
+
+
+
+	<select id="selectIdPage" resultType="java.lang.Integer">
+		select id from t_cash_apply
+		<where>
+			<if test="cm.keyword != null and cm.keyword != ''">
+				and (
+					or member_id like CONCAT('%',#{cm.keyword},'%')
+					or cron_num like CONCAT('%',#{cm.keyword},'%')
+					or cron_rate like CONCAT('%',#{cm.keyword},'%')
+					or charge_fee like CONCAT('%',#{cm.keyword},'%')
+					or use_price like CONCAT('%',#{cm.keyword},'%')
+					or get_price like CONCAT('%',#{cm.keyword},'%')
+					or payee_name like CONCAT('%',#{cm.keyword},'%')
+					or card_no like CONCAT('%',#{cm.keyword},'%')
+					or pay_status like CONCAT('%',#{cm.keyword},'%')
+					or approve_time like CONCAT('%',#{cm.keyword},'%')
+					or apply_time like CONCAT('%',#{cm.keyword},'%')
+				)
+			</if>
+		</where>
+	</select>
+</mapper>

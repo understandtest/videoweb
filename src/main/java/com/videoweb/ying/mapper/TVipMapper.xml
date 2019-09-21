@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.videoweb.ying.dao.TVipMapper">
+
+
+
+	<select id="selectIdPage" resultType="java.lang.Integer">
+		select id from t_vip
+		<where>
+			<if test="cm.keyword != null and cm.keyword != ''">
+				and (
+					or card_type like CONCAT('%',#{cm.keyword},'%')
+					or price like CONCAT('%',#{cm.keyword},'%')
+					or cache_num like CONCAT('%',#{cm.keyword},'%')
+				)
+			</if>
+		</where>
+	</select>
+	<select id="getVipList" resultType="java.util.Map">
+		SELECT id,
+		cache_num cacheNum,
+		card_type AS cardType,
+		day_num dayNum,
+		CASE WHEN card_type = 1 THEN '天卡'
+		WHEN card_type =2 THEN '月卡'
+		WHEN card_type =3 THEN '半年卡'
+		WHEN card_type =4 THEN '年卡'
+		WHEN card_type = 5 THEN '永久卡'  END cardTypeName,
+		FORMAT(price,2) as price,
+		cache_num AS cacheNum
+		FROM t_vip
+	</select>
+    <select id="getVipByCartType" resultType="com.videoweb.ying.po.TVip">
+		select id,card_type cardType,price,cache_num cacheNum,day_num dayNum from t_vip v where v.card_type = #{cartType}
+	</select>
+</mapper>

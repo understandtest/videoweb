@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.videoweb.ying.dao.TVideoMapper">
+
+
+    <select id="selectIdPage" resultType="java.lang.Integer">
+        select id from t_video
+        <where>
+            <if test="cm.keyword != null and cm.keyword != ''">
+                and (
+                or video_name like CONCAT('%',#{cm.keyword},'%')
+                or video_url like CONCAT('%',#{cm.keyword},'%')
+                or star_id like CONCAT('%',#{cm.keyword},'%')
+                or push_time like CONCAT('%',#{cm.keyword},'%')
+                or brief_content like CONCAT('%',#{cm.keyword},'%')
+                or video_cover like CONCAT('%',#{cm.keyword},'%')
+                or play_num like CONCAT('%',#{cm.keyword},'%')
+                or care_num like CONCAT('%',#{cm.keyword},'%')
+                or lose_num like CONCAT('%',#{cm.keyword},'%')
+                or dislike_num like CONCAT('%',#{cm.keyword},'%')
+                )
+            </if>
+        </where>
+    </select>
+
+    <select id="getVideoDetail" resultType="java.util.Map">
+				SELECT  
+				tv.id,
+				tv.`video_name` AS videoName,
+				tv.`play_time` as playTime,
+				tv.video_type as videoType,
+				tv.`video_url` AS videoUrl,
+				tv.video_cover_type as videoCoverType,
+				tv.`video_cover` AS videoCover,
+				tv.`brief_content` AS  briefContent,
+				IFNULL(tv.`play_num`,0) AS playNum,
+				IFNULL(tv.lose_num,0) AS loseNum,
+				DATE_FORMAT(tv.`push_time`,'%Y-%m-%d') AS pushTime,
+				(SELECT COUNT(1) FROM t_care_times tc WHERE tc.video_id = tv.id AND tc.care_type=1) AS careNum,
+				(SELECT COUNT(1) FROM t_care_times tcc WHERE tcc.video_id = tv.id AND tcc.care_type=2) AS dislikeNum,
+				tv.`star_id` AS starId,
+				ts.`name` AS starName,
+				ts.`headpic` AS headPic,
+				(select tk.data_value from t_data_key tk where tk.data_key = ts.`cup` and tk.data_key_type='ZHAOBEI') AS cup,
+				ts.`height_num` AS heightNum,
+				ts.`bwh` AS bwh,
+				ts.`brief_context` AS briefContext,
+				(SELECT COUNT(1) FROM t_video tvv WHERE tvv.`star_id`= ts.`id`) AS starVideoNum,
+				tc.`name` AS classifyName,
+				(SELECT GROUP_CONCAT(tta.name  SEPARATOR ',') FROM t_video_tags tvt LEFT JOIN t_tags tta ON tvt.tag_id= tta.id WHERE tvt.video_id = tv.id) AS tags
+				FROM  t_video tv 
+				LEFT JOIN t_star ts ON tv.`star_id`= ts.`id`
+				LEFT JOIN t_classify tc ON tc.id = tv.`classify_id`
+			WHERE tv.id = #{videoId} and tv.is_push =1
+	
+	</select>
+
+    <select id="selectListPage" resultType="java.util.Map">
+        select * from(
+        SELECT
+        tv.id,
+        tv.`video_name` AS videoName,
+        tv.`play_time` as playTime,
+        tv.video_type as videoType,
+        tv.`video_url` AS videoUrl,
+        tv.video_cover_type as videoCoverType,
+        tv.`video_cover` AS videoCover,
+        tv.`brief_content` AS briefContent,
+        IFNULL(tv.`play_num`,0) AS playNum,
+        tcc.`name` AS classifyName,
+        tv.`star_id` as starId,
+        tv.`classify_id` as classifyId,
+        tv.create_time as createTime,
+        tv.push_time as pushTime,
+        (SELECT GROUP_CONCAT(tta.name SEPARATOR ',') FROM t_video_tags tvt LEFT JOIN t_tags tta ON tvt.tag_id= tta.id
+        WHERE tvt.video_id = tv.id) AS tags,
+        <if test="cm.memberId !=null and cm.memberId !=''">
+            IFNULL((select count(1) from t_care_history tcf where tv.id=tcf.video_id and tcf.member_id =
+            #{cm.memberId}),0) as isCare,
+        </if>
+        (select count(1) from t_care_history tc where tv.id=tc.video_id) as careNum
+        FROM
+        t_video tv
+        LEFT JOIN t_classify tcc ON tcc.id = tv.`classify_id`
+        where 1=1 and tv.is_push =1) tvv
+        WHERE 1=1
+        <if test="cm.starId !=null and cm.starId !=''">
+            AND tvv.starId = #{cm.starId}
+        </if>
+        <if test="cm.classifyId !=null and cm.classifyId !='' and cm.classifyId != -1">
+            AND tvv.classifyId = #{cm.classifyId}
+        </if>
+        <if test="cm.tagId !=null and cm.tagId !=''">
+            AND FIND_IN_SET(#{cm.tagId},(SELECT GROUP_CONCAT(tta.id SEPARATOR ',') FROM t_video_tags tvt LEFT JOIN
+            t_tags tta ON tvt.tag_id= tta.id WHERE tvt.video_id = tvv.id))
+        </if>
+        <if test="cm.tagName !=null and cm.tagName !=''">
+            AND FIND_IN_SET(#{cm.tagName},(SELECT GROUP_CONCAT(tta.name SEPARATOR ',') FROM t_video_tags tvt LEFT JOIN
+            t_tags tta ON tvt.tag_id= tta.id WHERE tvt.video_id = tvv.id))
+        </if>
+        <if test="cm.tagIds !=null and cm.tagIds !=''">
+            and FIND_IN_SET(tvv.id,(SELECT GROUP_CONCAT(tvth.videoId SEPARATOR ',') FROM (
+            SELECT tvt.`video_id` AS videoId
+            FROM t_video_tags tvt
+            WHERE FIND_IN_SET(tvt.`tag_id` ,#{cm.tagIds})
+            GROUP BY tvt.`video_id`
+            ) tvth))
+        </if>
+        <if test="cm.newVideo != null and cm.newVideo !=''">
+            order by tvv.pushTime desc
+        </if>
+        <if test="cm.mostPlay != null and cm.mostPlay !=''">
+            order by tvv.playNum desc
+        </if>
+        <if test="cm.mostCare != null and cm.mostPlay !=''">
+            order by tvv.careNum desc
+        </if>
+    </select>
+
+    <select id="getVideoList" resultType="java.util.Map">
+        SELECT
+        tv.id,
+        tv.`play_time` as playTime,
+        tv.`play_time` as playTime,
+        tv.`video_name` AS videoName,
+        tv.video_type as videoType,
+        tv.`video_url` AS videoUrl,
+        tv.video_cover_type as videoCoverType,
+        tv.`video_cover` AS videoCover
+        FROM
+        t_video tv
+        where 1=1 and tv.is_push =1
+        <if test="classifyId != null and classifyId !=''">
+            and tv.classify_id = #{classifyId}
+        </if>
+        <if test="newView != null and newView !=''">
+            ORDER BY tv.push_time DESC
+        </if>
+        <if test="mostView != null and mostView !=''">
+            ORDER BY tv.play_num DESC
+        </if>
+        LIMIT 0,6
+    </select>
+
+
+    <select id="newVideoPage" resultType="java.util.Map">
+        SELECT
+        tv.id,
+        tv.`video_name` AS videoName,
+        tv.video_type as videoType,
+        tv.`play_time` as playTime,
+        tv.`video_url` AS videoUrl,
+        tv.video_cover_type as videoCoverType,
+        tv.`video_cover` AS videoCover,
+        tc.`name` AS classifyName,
+        IFNULL(tv.`play_num`,0) AS playNum,
+        (SELECT GROUP_CONCAT(tta.name SEPARATOR ',') FROM t_video_tags tvt LEFT JOIN t_tags tta ON tvt.tag_id= tta.id
+        WHERE tvt.video_id = tv.id) AS tags
+        FROM
+        t_video tv LEFT JOIN t_classify tc ON tc.id = tv.`classify_id`
+        where 1=1 and tv.is_push =1
+        <if test="cm.classifyId != null and cm.classifyId !=''">
+            and tv.classify_id = #{cm.classifyId}
+        </if>
+        <if test="cm.newView != null and cm.newView !=''">
+            ORDER BY tv.push_time DESC
+        </if>
+        <if test="cm.mostView != null and cm.mostView !=''">
+            ORDER BY tv.play_num DESC
+        </if>
+    </select>
+
+    <select id="selectOPenVideo" resultType="java.util.Map">
+		select * from (
+		SELECT 
+			tj.id,
+			tj.videoName,
+			tj.videoType,
+			tj.videoUrl,
+			 CONCAT(tj.videoName,',',tj.tags,',',tj.classifyName,',',tj.starName) AS sst,
+			 tj.classifyName,
+			 tj.tags,
+			 tj.playNum,
+			 tj.playTime,
+			 tj.videoCoverType,
+			 tj.videoCover,
+			 tj.starName
+			FROM
+			(
+				SELECT  
+				tv.id,
+				tv.`video_name` AS videoName,
+				tv.`play_time` as playTime,
+				tv.video_type as videoType,
+				tv.`video_url` AS videoUrl,
+				tv.video_cover_type as videoCoverType,
+				tv.`video_cover` AS videoCover,
+				tc.`name` AS classifyName,
+				(SELECT GROUP_CONCAT(tta.name  SEPARATOR ',') FROM t_video_tags tvt LEFT JOIN t_tags tta ON tvt.tag_id= tta.id WHERE tvt.video_id = tv.id) AS tags,
+				ts.name AS starName,
+				IFNULL(tv.`play_num`,0) AS playNum
+				FROM 
+				 t_video tv LEFT JOIN t_classify tc ON tc.id = tv.`classify_id`
+				 LEFT JOIN t_star ts ON ts.`id` = tv.`star_id`
+				 WHERE 1=1 and tv.is_push =1
+			 ) tj
+ 			) tjj
+			where 1=1 and tjj.sst like CONCAT('%',#{cm.searchName},'%')
+	</select>
+
+    <select id="getLikeVideoById" resultType="java.util.Map">
+        SELECT tv.id,
+        tv.`video_name` AS videoName,
+        DATE_FORMAT(tv.push_time,'%Y-%m-%d') pushTime,
+        tv.`video_cover` AS videoCover,
+        tv.`play_time` as playTime,
+        tv.video_cover_type as videoCoverType,
+        IFNULL(tv.`play_num`,0) AS playNum,
+        GROUP_CONCAT(tta.name SEPARATOR ',') AS tagsName
+        FROM t_video tv LEFT JOIN t_video_tags tvt ON tvt.`video_id` = tv.`id`
+        LEFT JOIN t_tags tta ON tta.id = tvt.`tag_id`
+        WHERE 1=1 and tv.is_push =1 and
+        FIND_IN_SET(tta.id ,(
+
+        SELECT GROUP_CONCAT(tta.id SEPARATOR ',') FROM t_video tv LEFT JOIN t_video_tags tvt ON tvt.`video_id` = tv.`id`
+        LEFT JOIN t_tags tta ON tta.id = tvt.`tag_id`
+        WHERE tv.id = #{videoId} and tv.is_push =1
+        ))
+        GROUP BY tv.id
+
+        <if test="ppSize != null and ppSize !=''">
+            limit 0,15
+        </if>
+    </select>
+
+    <select id="getStarVideoByStarId" resultType="java.util.Map">
+        SELECT tv.id,
+        tv.`video_name` AS videoName,
+        tv.`play_time` as playTime,
+        tv.`video_cover` AS videoCover,
+        tv.video_cover_type as videoCoverType,
+        tv.video_url as videoUrl
+        FROM t_video tv
+        where 1=1 and tv.is_push =1 and tv.star_id = #{starId}
+        <if test="ppSize != null and ppSize !=''">
+            limit 0,15
+        </if>
+    </select>
+</mapper>

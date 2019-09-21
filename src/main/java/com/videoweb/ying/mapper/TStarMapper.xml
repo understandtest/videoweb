@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.videoweb.ying.dao.TStarMapper">
+
+
+
+	<select id="selectIdPage" resultType="java.lang.Integer">
+		select id from t_star
+		<where>
+			<if test="cm.keyword != null and cm.keyword != ''">
+				and (
+					or headpic like CONCAT('%',#{cm.keyword},'%')
+					or name like CONCAT('%',#{cm.keyword},'%')
+					or height_num like CONCAT('%',#{cm.keyword},'%')
+					or bwh like CONCAT('%',#{cm.keyword},'%')
+					or cup like CONCAT('%',#{cm.keyword},'%')
+					or brief_context like CONCAT('%',#{cm.keyword},'%')
+				)
+			</if>
+		</where>
+	</select>
+	<select id="selectListPage" resultType="java.util.Map">
+	select * from (
+		SELECT 
+		ts.`id`,
+		ts.`name`,
+		ts.update_time,
+		ts.heat,
+		(SELECT tk.data_value FROM t_data_key tk WHERE tk.data_key = ts.`cup` AND tk.data_key_type='ZHAOBEI') AS cupName,
+		ts.`headpic`,
+		ts.pic_type as picType,
+		ts.`bwh`,
+		ts.cup,
+		ts.`height_num` AS heightNum,
+		ts.`brief_context` AS briefContext,
+		(select count(1) from t_video tv where tv.star_id = ts.id) as videoNum
+	 	 FROM t_star ts
+	  ) tk
+	  where 1=1 
+	  <if test="cm.cup != null and cm.cup !=''and cm.cup !='-1'">
+	  	  and tk.`cup` = #{cm.cup}
+	  </if>
+	  <if test="cm.startId !=null and cm.startId !=''">
+	  	  and tk.`id` = #{cm.startId}
+	  </if>
+	   <if test="cm.newVideo != null and cm.newVideo !=''">
+	  	 order by FIND_IN_SET(tk.id,(select GROUP_CONCAT(tv.id  SEPARATOR ',')  from  t_video tv where tv.star_id = tk.id order by tv.play_num desc ))
+	  </if>
+	  <if test="cm.videoNum != null and cm.videoNum !=''">
+	  	 order by tk.videoNum desc
+	  </if>
+		<if test="cm.newData != null and cm.newData !=''">
+			order by tk.update_time desc
+		</if>
+	  
+	  
+	</select>
+	
+	<select id="getStarList" resultType="java.util.Map">
+		SELECT 
+			(SELECT SUM(play_num) FROM t_video tv WHERE tv.star_id = ts.id) AS playNum,
+			ts.id,
+			ts.`name`,
+			ts.`pic_type` AS picType,
+			ts.`headpic`,
+			ts.`brief_context` AS briefContext,
+			ts.`bwh`,
+			ts.`height_num` AS heightNum,
+			(SELECT tk.data_value FROM t_data_key tk WHERE tk.data_key = ts.`cup` AND tk.data_key_type='ZHAOBEI') AS cupName,
+			(SELECT COUNT(1) FROM t_video tv WHERE tv.star_id = ts.id) AS videoNum
+			 FROM t_star ts 
+			 LIMIT 0,4
+	</select>
+	
+	<select id="getStarInfoByVideo" resultType="java.util.Map">
+		SELECT 
+			ts.id,
+			ts.`name`,
+			ts.`headpic`,
+		    ts.`brief_context` AS briefContex,
+		   (SELECT COUNT(1) FROM t_video tv WHERE tv.star_id = ts.id) AS videoNum
+		    FROM t_star ts 
+		    where ts.id = #{starId}
+	</select>
+</mapper>

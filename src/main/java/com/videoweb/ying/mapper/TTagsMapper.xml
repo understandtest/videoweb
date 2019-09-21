@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.videoweb.ying.dao.TTagsMapper">
+
+
+
+	<select id="selectIdPage" resultType="java.lang.Integer">
+		select id from t_tags
+		<where>
+			<if test="cm.keyword != null and cm.keyword != ''">
+				and (
+					or tag_type_id like CONCAT('%',#{cm.keyword},'%')
+					or name like CONCAT('%',#{cm.keyword},'%')
+				)
+			</if>
+		</where>
+	</select>
+	<select id="selectTagsByType" resultType="java.util.Map">
+		select 
+		id,
+		name,
+		pic_url as picUrl,
+		pic_type as picType
+		from t_tags where 1=1
+		<if test="id != null and id !=-1 and id !=''">
+			and tag_type_id = #{id}
+		</if>
+	</select>
+	
+	<select id="selectTagsByRandom" resultType="java.util.Map">
+		SELECT sh1.id,
+		sh1.name,
+		sh1.pic_url as picUrl,
+		sh1.pic_type as picType 
+		FROM t_tags AS sh1 
+	</select>
+    <select id="getTags" resultType="java.util.Map">
+		select id,pic_type picType, pic_url picUrl,name from t_tags where tag_type_id = #{tpId}
+	</select>
+</mapper>

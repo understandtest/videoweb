@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.videoweb.ying.dao.TVersionMapper">
+
+
+
+	<select id="selectIdPage" resultType="java.lang.Integer">
+		select id from t_version
+		<where>
+			<if test="cm.keyword != null and cm.keyword != ''">
+				and (
+					or version_type like CONCAT('%',#{cm.keyword},'%')
+					or version_url like CONCAT('%',#{cm.keyword},'%')
+					or version_code like CONCAT('%',#{cm.keyword},'%')
+				)
+			</if>
+		</where>
+	</select>
+	<select id="getNewVersion" resultType="java.util.Map">
+	 SELECT 
+		tv.`version_url` AS versionUrl,
+		tv.id,
+		tv.`version_code` AS versionCode,
+		tv.is_update as isUpdate,
+		tv.version_context as versionContent
+	 FROM t_version tv
+	 WHERE tv.`version_type`=#{type}
+	 order by tv.id desc
+	</select>
+</mapper>

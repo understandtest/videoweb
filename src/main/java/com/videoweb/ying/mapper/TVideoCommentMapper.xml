@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.videoweb.ying.dao.TVideoCommentMapper">
+
+
+
+	<select id="selectIdPage" resultType="java.lang.Integer">
+		select id from t_video_comment
+		<where>
+			<if test="cm.keyword != null and cm.keyword != ''">
+				and (
+					or video_id like CONCAT('%',#{cm.keyword},'%')
+					or member_id like CONCAT('%',#{cm.keyword},'%')
+					or com_content like CONCAT('%',#{cm.keyword},'%')
+					or com_time like CONCAT('%',#{cm.keyword},'%')
+					or care_num like CONCAT('%',#{cm.keyword},'%')
+				)
+			</if>
+		</where>
+	</select>
+	<select id="getVideoCommon" resultType="java.util.Map">
+	select * from (
+		SELECT 
+		tv.id,
+		tm.`nick_name` AS nickName,
+		tm.`headpic`,
+		tm.sex,
+		tv.`com_time` AS comTime,
+		tv.`com_content` AS comContent,
+		tv.video_id as videoId,
+		(SELECT COUNT(1) FROM t_video_comment_dianzan tc WHERE tc.video_comment_id = tv.id) AS dianzNum,
+		<if test="memberId != null and memberId !=''">
+			case when (SELECT count(1) FROM t_video_comment_dianzan tc WHERE tc.video_comment_id = tv.id AND tc.member_id = #{memberId}) <![CDATA[>]]> 0 then 1  
+			when (SELECT count(1) FROM t_video_comment_dianzan tc WHERE tc.video_comment_id = tv.id AND tc.member_id = #{memberId}) = 0 then 0 end
+			as isMine
+		</if>
+		<if test="memberId==null">
+			0 as isMine
+		</if>
+		 FROM t_video_comment tv LEFT JOIN t_member tm ON tm.id = tv.`member_id`
+		 LEFT JOIN t_video_comment_dianzan td ON td.`video_comment_id` = tv.`id`)
+		 sk
+		 where sk.videoId = #{videoId}
+		 <if test="lastNew != null and lastNew !='' ">
+		 	order by sk.comTime desc
+		 </if>
+		  <if test="mastNum!= null and mastNum !='' ">
+		 	order by sk.dianzNum desc
+		 </if>
+	</select>
+	
+	<select id="selectVideoCommentConut" resultType="java.lang.Integer">
+		SELECT COUNT(1) FROM t_video_comment tvc WHERE tvc.`video_id` =#{videoId}
+	</select>
+</mapper>

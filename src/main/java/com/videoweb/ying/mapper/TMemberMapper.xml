@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.videoweb.ying.dao.TMemberMapper">
+
+
+
+	<select id="selectIdPage" resultType="java.lang.Integer">
+		select id from t_member
+		<where>
+			<if test="cm.keyword != null and cm.keyword != ''">
+				and (
+					or tel like CONCAT('%',#{cm.keyword},'%')
+					or headpic like CONCAT('%',#{cm.keyword},'%')
+					or nick_name like CONCAT('%',#{cm.keyword},'%')
+					or level_id like CONCAT('%',#{cm.keyword},'%')
+					or view_num like CONCAT('%',#{cm.keyword},'%')
+					or used_view_num like CONCAT('%',#{cm.keyword},'%')
+					or cache_num like CONCAT('%',#{cm.keyword},'%')
+					or used_cache_num like CONCAT('%',#{cm.keyword},'%')
+					or is_vip like CONCAT('%',#{cm.keyword},'%')
+					or vip_date like CONCAT('%',#{cm.keyword},'%')
+					or extension_code like CONCAT('%',#{cm.keyword},'%')
+				)
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryMemberInfo" resultType="java.util.Map">
+			
+		SELECT tm.id,
+			tm.tel,
+			tm.headpic,
+			tm.integral_number integralNumber,
+			tm.nick_name AS nickName,
+			tl.name  AS   levleName,
+			tm.level_id as levelId,
+			tm.view_num AS viewNum,
+			tm.used_view_num AS usedViewNum,
+			tm.tmp_view_num as tmpViewNum,
+			tm.cache_num AS cacheNum,
+			tm.used_cache_num AS usedCacheNum,
+			tm.sex as sex,
+			tm.is_remind as isRemind,
+			tm.is_vip AS isVip,
+			tm.vip_id as vipId,
+			DATE_FORMAT(tm.vip_date,'%Y-%m-%d') AS vipDate,
+			tm.extension_code AS extensionCode,
+			tl.sort_no as sortNo,
+			(SELECT COUNT(1) FROM t_extension_history th WHERE th.`member_id` = tm.id )AS exNum
+			FROM  t_member tm LEFT JOIN t_level tl ON tm.level_id = tl.id
+			where 1=1 and tm.id = #{memberId}
+		
+	</select>
+    <update id="clearNumber">
+		update t_member set used_cache_num = 0,used_view_num = 0,tmp_view_num = 0
+	</update>
+</mapper>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.videoweb.ying.dao.TExtendPriceMapper">
+
+
+
+	<select id="selectIdPage" resultType="java.lang.Integer">
+		select id from t_extend_price
+		<where>
+			<if test="cm.keyword != null and cm.keyword != ''">
+				and (
+					or vip_history_id like CONCAT('%',#{cm.keyword},'%')
+					or member_id like CONCAT('%',#{cm.keyword},'%')
+					or name like CONCAT('%',#{cm.keyword},'%')
+					or tel like CONCAT('%',#{cm.keyword},'%')
+					or recharge_time like CONCAT('%',#{cm.keyword},'%')
+					or price like CONCAT('%',#{cm.keyword},'%')
+					or recharge_rate like CONCAT('%',#{cm.keyword},'%')
+					or cron_num like CONCAT('%',#{cm.keyword},'%')
+					or extend_id like CONCAT('%',#{cm.keyword},'%')
+				)
+			</if>
+		</where>
+	</select>
+	<select id="getTotalCronNum" resultType="java.lang.Integer">
+	SELECT IFNULL(SUM(tp.`cron_num`),0) AS totalCronNum FROM t_extend_price tp   
+	WHERE 
+	1=1 and 
+	tp.`extend_id` =#{extendId}
+	</select>
+	
+	<select id="getCronHistory" resultType="java.util.Map">
+		SELECT tep.name,
+			tep.`tel`,
+			DATE_FORMAT(tep.`recharge_time`,'%Y-%m-%d') AS rechargeDate,
+			tep.`price` as rechargePrice,
+			tep.`cron_num` as income
+			FROM t_extend_price tep 
+			WHERE tep.`extend_id` =#{extendId}
+			ORDER BY tep.`create_time` DESC
+		
+	</select>
+	
+	
+</mapper>
